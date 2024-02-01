@@ -10,14 +10,15 @@ class Bullet(Sprite):
         self.screen = ai_game.screen
         self.settings = ai_game.settings
         self.color = self.settings.bullet_color
-
+        self.bullet_sound = pygame.mixer.Sound('sound/bullet.mp3')
         # Создание снаряда в позиции (0, 0) и назначение правильной позиции.
         self.rect = pygame.Rect(0, 0, self.settings.bullet_width, 
             self.settings.bullet_height)
         self.rect.midtop = ai_game.ship.rect.midtop
-
+        self.bullet_sound.play()
         # Позиция снаряда хранится в вещественном формате.
         self.y = float(self.rect.y)
+
 
     def update(self):
         '''Перемещает снаряд по экрану.'''

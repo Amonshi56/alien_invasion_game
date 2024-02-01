@@ -1,3 +1,4 @@
+import pygame
 
 class Settings():
     '''Класс для хранения настроек игры Alien Invasion.'''
@@ -8,6 +9,7 @@ class Settings():
         self.screen_width = 800
         self.screen_height = 800
         self.bg_color = (230, 230, 230)
+        self.bg_image = pygame.image.load('images/background.png')
         self.fullscreen = True
         self.bullet_limit = False
         self.bullets_allowed = 3
@@ -20,3 +22,9 @@ class Settings():
         self.bullet_width = 3
         self.bullet_height = 15
         self.bullet_color = (255, 0, 0)
+
+        # Настройки пришельцев
+        self.alian_speed = 1.0
+        self.fleet_drop_speed = 10
+        self.fleet_direction = 1
+
