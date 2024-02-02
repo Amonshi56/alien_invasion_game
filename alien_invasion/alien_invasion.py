@@ -8,6 +8,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 
 class AlienInvasion:
     '''Класс для управления ресурсами и поведением игры.'''
@@ -34,6 +35,9 @@ class AlienInvasion:
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self._create_fleet()
+
+        # Кнопка
+        self.play_button = Button(self, 'Play')
     
     def run_game(self):
         '''Запуск основного цикла игры.'''
@@ -78,6 +82,28 @@ class AlienInvasion:
                 self._check_keydown_events(event)   
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
+
+    def _check_play_button(self, mouse_pos):
+        '''Запускает новую игру при нажатии play'''
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            # Сброс игровой статистики
+            self.stats.reset_stats()
+            self.stats.game_active = True      
+
+            # Очистка снарядов и пришельцев
+            self.aliens.empty()
+            self.bullets.empty()
+
+            # Создание нового флота и корабля
+            self._create_fleet()
+            self.ship.center_ship() 
+
+            # Указатель мыши скрывается
+            pygame.mouse.set_visible(False)        
 
     def _check_keydown_events(self, event):
         '''Реакция на нажатие клавиш.'''
@@ -178,8 +204,7 @@ class AlienInvasion:
             sleep(0.5)
         else:
             self.stats.game_active = False
-
-        
+            pygame.mouse.set_visible(True)     
 
     def _check_aliens_bottom(self):
         '''Проверяет, добрались ли пришельцы до нижнего края экрана.'''
@@ -190,13 +215,17 @@ class AlienInvasion:
                 break
 
     def _update_screen(self):
+        i = 0
         # При каждом проходе цикла перерисовывается экран.
-        self.screen.blit(self.settings.bg_image , (0, 0))
+        self.screen.blit(self.settings.bg_image , (0, i))
         #self.screen.fill(self.settings.bg_color)
         self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+
+        if not self.stats.game_active:
+            self.play_button.draw_button()
 
         # Отоброжение последнего прорисованного экрана.
         pygame.display.flip()
