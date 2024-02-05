@@ -9,6 +9,7 @@ from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
 
 class AlienInvasion:
     '''Класс для управления ресурсами и поведением игры.'''
@@ -30,7 +31,9 @@ class AlienInvasion:
         
         pygame.display.set_caption('Alien Invasion')
 
+        
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -67,12 +70,21 @@ class AlienInvasion:
         '''Обработка коллизий снарядов с пришельцами'''
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.aliens, True, True)
+
+        if collisions:
+            for aliens in collisions.values():    
+                self.stats.score += self.settings.alian_points * len(aliens)
+            self.sb.prep_score()
+            self.sb.check_high_score()        
     
         if not self.aliens:
             # Уничтожение существующих снарядов и создание нового флота.
             self.bullets.empty()
             self._create_fleet()
-        
+            self.settings.increase_speed()
+            self.stats.level += 1
+            self.sb.prep_level()
+
     def _check_events(self):
         # Отслеживание событий клавиатуры и мыши.
         for event in pygame.event.get():
@@ -91,8 +103,12 @@ class AlienInvasion:
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
             # Сброс игровой статистики
+            self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
-            self.stats.game_active = True      
+            self.stats.game_active = True  
+            self.sb.prep_score() 
+            self.sb.prep_level()   
+            self.sb.prep_ships()
 
             # Очистка снарядов и пришельцев
             self.aliens.empty()
@@ -191,6 +207,7 @@ class AlienInvasion:
         '''Обработка столкновений'''
         if self.stats.ships_left > 0:
             self.stats.ships_left -= 1
+            self.sb.prep_ships()
 
             # Очистка снарядов и пришельцев
             self.aliens.empty()
@@ -223,6 +240,7 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+        self.sb.show_score()
 
         if not self.stats.game_active:
             self.play_button.draw_button()
